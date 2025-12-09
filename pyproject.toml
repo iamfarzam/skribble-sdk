@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "skribble-sdk"
+name = "skribble"
 version = "0.1.0"
 description = "Official-spec Skribble API v2 SDK (built from Skribble Postman collection)"
 readme = "README.md"
