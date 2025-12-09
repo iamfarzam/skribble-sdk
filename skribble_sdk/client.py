@@ -1,0 +1,145 @@
+from __future__ import annotations
+
+from typing import Any, Dict, Optional, Union
+
+import redis
+import requests
+
+from .auth import TokenManager
+from .config import SkribbleConfig
+from .exceptions import SkribbleHTTPError
+from .resources.documents import DocumentsClient
+from .resources.monitoring import MonitoringClient
+from .resources.report import ReportClient
+from .resources.seals import SealsClient
+from .resources.sendto import SendToClient
+from .resources.signature_requests import SignatureRequestsClient
+from .resources.user import UserClient
+
+
+JsonType = Union[Dict[str, Any], list, None]
+
+
+class SkribbleClient:
+    """
+    High-level Skribble API v2 client.
+
+    Usage (single-tenant):
+
+        import redis
+        from skribble_sdk import SkribbleClient
+
+        r = redis.Redis(host="localhost", port=6379, db=0)
+        client = SkribbleClient(
+            username="api_demo_your_name",
+            api_key="your_api_key",
+            redis_client=r,
+        )
+
+        docs = client.documents.list()
+
+    For multi-tenant DMS:
+    - Create one SkribbleClient per tenant, with separate credentials and/or tenant_id.
+    """
+
+    def __init__(
+        self,
+        *,
+        username: str,
+        api_key: str,
+        redis_client: redis.Redis,
+        tenant_id: Optional[str] = None,
+        config: Optional[SkribbleConfig] = None,
+        session: Optional[requests.Session] = None,
+    ) -> None:
+        self.config = config or SkribbleConfig()
+        self.session = session or requests.Session()
+        self.session.headers.update({"User-Agent": self.config.user_agent})
+
+        self._token_manager = TokenManager(
+            username=username,
+            api_key=api_key,
+            http_session=self.session,
+            config=self.config,
+            redis_client=redis_client,
+            tenant_id=tenant_id,
+        )
+
+        # Resource clients
+        self.signature_requests = SignatureRequestsClient(self)
+        self.documents = DocumentsClient(self)
+        self.seals = SealsClient(self)
+        self.sendto = SendToClient(self)
+        self.user = UserClient(self)
+        self.report = ReportClient(self)
+        self.monitoring = MonitoringClient(self)
+
+    # ---------- Core HTTP helpers ----------
+
+    def _get_access_token(self, *, force_refresh: bool = False) -> str:
+        return self._token_manager.get_access_token(force_refresh=force_refresh)
+
+    def _build_url(self, path: str, *, management: bool = False) -> str:
+        base = self.config.management_base_url if management else self.config.api_base_url
+        return f"{base}{path}"
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        management: bool = False,
+        auth: bool = True,
+        params: Optional[Dict[str, Any]] = None,
+        json: JsonType = None,
+        headers: Optional[Dict[str, str]] = None,
+        stream: bool = False,
+        expected_status: Optional[int] = None,
+    ) -> requests.Response:
+        """
+        Low-level request wrapper. Most users should use resource methods.
+        """
+        url = self._build_url(path, management=management)
+        hdrs: Dict[str, str] = {}
+        if headers:
+            hdrs.update(headers)
+
+        if auth:
+            token = self._get_access_token()
+            hdrs.setdefault("Authorization", f"Bearer {token}")
+
+        try:
+            resp = self.session.request(
+                method=method.upper(),
+                url=url,
+                params=params,
+                json=json,
+                headers=hdrs,
+                timeout=self.config.timeout,
+                verify=self.config.verify_ssl,
+                stream=stream,
+            )
+        except requests.RequestException as exc:
+            raise SkribbleHTTPError(-1, f"Request to Skribble failed: {exc}") from exc
+
+        if expected_status is not None and resp.status_code != expected_status:
+            self._raise_for_status(resp)
+        elif expected_status is None and not (200 <= resp.status_code < 300):
+            self._raise_for_status(resp)
+
+        return resp
+
+    def _raise_for_status(self, resp: requests.Response) -> None:
+        text = resp.text
+        try:
+            data = resp.json()
+            msg = data.get("message") or data.get("error") or text
+        except Exception:
+            data = None
+            msg = text
+        raise SkribbleHTTPError(
+            resp.status_code,
+            msg,
+            response_json=data,
+            response_text=text,
+        )
