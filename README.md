@@ -19,13 +19,13 @@ Skribble Postman collection.
 ## Installation
 
 ```bash
-pip install skribble-sdk
+pip install skribble
 ```
 
 ## Usage
 ```python
 import redis
-from skribble_sdk import SkribbleClient
+from skribble import SkribbleClient
 
 r = redis.Redis(host="localhost", port=6379, db=0)
 
