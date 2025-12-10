@@ -1,4 +1,4 @@
-# skribble-sdk
+# Skribble SDK
 
 A production-ready Python SDK for the **Skribble API v2**, generated from the official
 Skribble Postman collection.

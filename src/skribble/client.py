@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import Union
 
 import redis
 import requests
-
-from .auth import TokenManager
-from .config import SkribbleConfig
-from .exceptions import SkribbleHTTPError
-from .resources.documents import DocumentsClient
-from .resources.monitoring import MonitoringClient
-from .resources.report import ReportClient
-from .resources.seals import SealsClient
-from .resources.sendto import SendToClient
-from .resources.signature_requests import SignatureRequestsClient
-from .resources.user import UserClient
-
+from skribble.auth import TokenManager
+from skribble.config import SkribbleConfig
+from skribble.exceptions import SkribbleHTTPError
+from skribble.resources.documents import DocumentsClient
+from skribble.resources.monitoring import MonitoringClient
+from skribble.resources.report import ReportClient
+from skribble.resources.seals import SealsClient
+from skribble.resources.sendto import SendToClient
+from skribble.resources.signature_requests import SignatureRequestsClient
+from skribble.resources.user import UserClient
 
 JsonType = Union[Dict[str, Any], list, None]
 
@@ -27,7 +28,7 @@ class SkribbleClient:
     Usage (single-tenant):
 
         import redis
-        from skribble_sdk import SkribbleClient
+        from skribble import SkribbleClient
 
         r = redis.Redis(host="localhost", port=6379, db=0)
         client = SkribbleClient(
@@ -43,14 +44,14 @@ class SkribbleClient:
     """
 
     def __init__(
-        self,
-        *,
-        username: str,
-        api_key: str,
-        redis_client: redis.Redis,
-        tenant_id: Optional[str] = None,
-        config: Optional[SkribbleConfig] = None,
-        session: Optional[requests.Session] = None,
+            self,
+            *,
+            username: str,
+            api_key: str,
+            redis_client: redis.Redis,
+            tenant_id: Optional[str] = None,
+            config: Optional[SkribbleConfig] = None,
+            session: Optional[requests.Session] = None,
     ) -> None:
         self.config = config or SkribbleConfig()
         self.session = session or requests.Session()
@@ -84,17 +85,17 @@ class SkribbleClient:
         return f"{base}{path}"
 
     def request(
-        self,
-        method: str,
-        path: str,
-        *,
-        management: bool = False,
-        auth: bool = True,
-        params: Optional[Dict[str, Any]] = None,
-        json: JsonType = None,
-        headers: Optional[Dict[str, str]] = None,
-        stream: bool = False,
-        expected_status: Optional[int] = None,
+            self,
+            method: str,
+            path: str,
+            *,
+            management: bool = False,
+            auth: bool = True,
+            params: Optional[Dict[str, Any]] = None,
+            json: JsonType = None,
+            headers: Optional[Dict[str, str]] = None,
+            stream: bool = False,
+            expected_status: Optional[int] = None,
     ) -> requests.Response:
         """
         Low-level request wrapper. Most users should use resource methods.

@@ -5,9 +5,9 @@ from typing import Optional
 
 import redis
 import requests
-
-from .config import SkribbleConfig
-from .exceptions import SkribbleAuthError, SkribbleHTTPError
+from skribble.config import SkribbleConfig
+from skribble.exceptions import SkribbleAuthError
+from skribble.exceptions import SkribbleHTTPError
 
 
 class TokenManager:
@@ -19,14 +19,14 @@ class TokenManager:
     """
 
     def __init__(
-        self,
-        *,
-        username: str,
-        api_key: str,
-        http_session: requests.Session,
-        config: SkribbleConfig,
-        redis_client: redis.Redis,
-        tenant_id: Optional[str] = None,
+            self,
+            *,
+            username: str,
+            api_key: str,
+            http_session: requests.Session,
+            config: SkribbleConfig,
+            redis_client: redis.Redis,
+            tenant_id: Optional[str] = None,
     ) -> None:
         self._username = username
         self._api_key = api_key
@@ -102,10 +102,10 @@ class TokenManager:
             data = resp.json()
             # Common patterns: {"token": "..."} or {"access_token": "..."} or string
             token = (
-                data.get("access_token")
-                or data.get("token")
-                or data.get("jwt")
-                or data.get("AUTH_ACCESS_TOKEN")
+                    data.get("access_token")
+                    or data.get("token")
+                    or data.get("jwt")
+                    or data.get("AUTH_ACCESS_TOKEN")
             )
             if not token:
                 # Try plain JSON string

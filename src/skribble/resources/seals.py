@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from ..client import SkribbleClient
-from ..exceptions import SkribbleError
+from skribble.client import SkribbleClient
+from skribble.exceptions import SkribbleError
 
 
 class SealsClient:

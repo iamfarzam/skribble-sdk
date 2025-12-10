@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
-from ..client import SkribbleClient
+from skribble.client import SkribbleClient
 
 
 class ReportClient:

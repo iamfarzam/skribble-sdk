@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from ..exceptions import SkribbleError
-from ..client import SkribbleClient
+from skribble.exceptions import SkribbleError
+from skribble.client import SkribbleClient
 
 
 class SignatureRequestsClient:
