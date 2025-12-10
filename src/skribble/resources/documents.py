@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import TYPE_CHECKING
 
-from skribble.client import SkribbleClient
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class DocumentsClient:
@@ -14,11 +18,11 @@ class DocumentsClient:
         self._client = client
 
     def upload(
-        self,
-        *,
-        title: str,
-        content: str,
-        **extra_fields: Any,
+            self,
+            *,
+            title: str,
+            content: str,
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Simple PDF document upload.

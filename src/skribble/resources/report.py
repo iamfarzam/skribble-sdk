@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
 
-from skribble.client import SkribbleClient
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class ReportClient:
@@ -14,13 +18,13 @@ class ReportClient:
         self._client = client
 
     def get_signature_activities(
-        self,
-        *,
-        start_date: str,
-        end_date: str,
-        page: Optional[int] = None,
-        size: Optional[int] = None,
-        **extra_params: Any,
+            self,
+            *,
+            start_date: str,
+            end_date: str,
+            page: Optional[int] = None,
+            size: Optional[int] = None,
+            **extra_params: Any,
     ) -> Dict[str, Any]:
         """
         Get signature activities by business.

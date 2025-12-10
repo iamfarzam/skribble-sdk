@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
+from typing import Dict
+from typing import TYPE_CHECKING
 
-from skribble.client import SkribbleClient
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class UserClient:

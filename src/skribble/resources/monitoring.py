@@ -1,8 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import TYPE_CHECKING
 
-from skribble.client import SkribbleClient
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class MonitoringClient:
@@ -16,13 +20,13 @@ class MonitoringClient:
         self._client = client
 
     def create_signature_request_with_callbacks(
-        self,
-        *,
-        title: str,
-        content: str,
-        signatures: List[Dict[str, Any]],
-        callbacks: List[Dict[str, Any]],
-        **extra_fields: Any,
+            self,
+            *,
+            title: str,
+            content: str,
+            signatures: List[Dict[str, Any]],
+            callbacks: List[Dict[str, Any]],
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Convenience wrapper for creating a SignatureRequest with all possible callbacks,

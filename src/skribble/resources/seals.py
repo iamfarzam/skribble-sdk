@@ -1,9 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
+from typing import Dict
+from typing import Optional
+from typing import TYPE_CHECKING
 
-from skribble.client import SkribbleClient
 from skribble.exceptions import SkribbleError
+
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class SealsClient:
@@ -15,13 +20,13 @@ class SealsClient:
         self._client = client
 
     def seal_document(
-        self,
-        *,
-        content: Optional[str] = None,
-        document_id: Optional[str] = None,
-        account_name: Optional[str] = None,
-        visual_signature: Optional[Dict[str, Any]] = None,
-        **extra_fields: Any,
+            self,
+            *,
+            content: Optional[str] = None,
+            document_id: Optional[str] = None,
+            account_name: Optional[str] = None,
+            visual_signature: Optional[Dict[str, Any]] = None,
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Seal a document using Skribble seals.

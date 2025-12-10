@@ -1,9 +1,15 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import TYPE_CHECKING
 
 from skribble.exceptions import SkribbleError
-from skribble.client import SkribbleClient
+
+if TYPE_CHECKING:
+    from skribble.client import SkribbleClient
 
 
 class SignatureRequestsClient:
@@ -17,24 +23,24 @@ class SignatureRequestsClient:
     # ---------- Create ----------
 
     def create(
-        self,
-        *,
-        title: str,
-        signatures: List[Dict[str, Any]],
-        content: Optional[str] = None,
-        file_url: Optional[str] = None,
-        document_id: Optional[str] = None,
-        visual_signatures: Optional[List[Dict[str, Any]]] = None,
-        observers: Optional[List[Dict[str, Any]]] = None,
-        callbacks: Optional[List[Dict[str, Any]]] = None,
-        auto_attachments: Optional[List[Dict[str, Any]]] = None,
-        signature_level: Optional[str] = None,
-        legislation: Optional[str] = None,
-        owner_account_email: Optional[str] = None,
-        signing_sequence: Optional[List[str]] = None,
-        disable_tan: Optional[bool] = None,
-        disable_notifications: Optional[bool] = None,
-        **extra_fields: Any,
+            self,
+            *,
+            title: str,
+            signatures: List[Dict[str, Any]],
+            content: Optional[str] = None,
+            file_url: Optional[str] = None,
+            document_id: Optional[str] = None,
+            visual_signatures: Optional[List[Dict[str, Any]]] = None,
+            observers: Optional[List[Dict[str, Any]]] = None,
+            callbacks: Optional[List[Dict[str, Any]]] = None,
+            auto_attachments: Optional[List[Dict[str, Any]]] = None,
+            signature_level: Optional[str] = None,
+            legislation: Optional[str] = None,
+            owner_account_email: Optional[str] = None,
+            signing_sequence: Optional[List[str]] = None,
+            disable_tan: Optional[bool] = None,
+            disable_notifications: Optional[bool] = None,
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Create a SignatureRequest.
@@ -103,15 +109,15 @@ class SignatureRequestsClient:
     # ---------- Find / list ----------
 
     def list(
-        self,
-        *,
-        account_email: Optional[str] = None,
-        search: Optional[str] = None,
-        signature_status: Optional[str] = None,
-        status_overall: Optional[str] = None,
-        page_number: Optional[int] = None,
-        page_size: Optional[int] = None,
-        **extra_params: Any,
+            self,
+            *,
+            account_email: Optional[str] = None,
+            search: Optional[str] = None,
+            signature_status: Optional[str] = None,
+            status_overall: Optional[str] = None,
+            page_number: Optional[int] = None,
+            page_size: Optional[int] = None,
+            **extra_params: Any,
     ) -> Dict[str, Any]:
         """
         List and filter SignatureRequests.
@@ -166,12 +172,12 @@ class SignatureRequestsClient:
     # ---------- Signers ----------
 
     def add_signer(
-        self,
-        signature_request_id: str,
-        *,
-        account_email: Optional[str] = None,
-        signer_identity_data: Optional[Dict[str, Any]] = None,
-        **extra_fields: Any,
+            self,
+            signature_request_id: str,
+            *,
+            account_email: Optional[str] = None,
+            signer_identity_data: Optional[Dict[str, Any]] = None,
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Add an individual signer to an existing SignatureRequest.
@@ -211,13 +217,13 @@ class SignatureRequestsClient:
     # ---------- Attachments ----------
 
     def add_attachment(
-        self,
-        signature_request_id: str,
-        *,
-        filename: str,
-        content_type: str,
-        content: str,
-        **extra_fields: Any,
+            self,
+            signature_request_id: str,
+            *,
+            filename: str,
+            content_type: str,
+            content: str,
+            **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
         Add an attachment to a SignatureRequest.
