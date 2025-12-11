@@ -9,6 +9,7 @@ import redis
 import requests
 from skribble.auth import TokenManager
 from skribble.config import SkribbleConfig
+from skribble.config import SkribbleEUConfig
 from skribble.exceptions import SkribbleHTTPError
 from skribble.resources.documents import DocumentsClient
 from skribble.resources.monitoring import MonitoringClient
@@ -34,13 +35,15 @@ class SkribbleClient:
         client = SkribbleClient(
             username="api_demo_your_name",
             api_key="your_api_key",
-            redis_client=r,
+            redis_client=r
         )
 
         docs = client.documents.list()
 
-    For multi-tenant DMS:
+    For multi-tenant:
     - Create one SkribbleClient per tenant, with separate credentials and/or tenant_id.
+
+    `region` should be DE_EU for Europe or CH_ROW for Switzerland and rest of world.
     """
 
     def __init__(
@@ -49,12 +52,13 @@ class SkribbleClient:
             username: str,
             api_key: str,
             redis_client: redis.Redis,
+            region: str = "CH_ROW",
             tenant_id: Optional[str] = None,
             config: Optional[SkribbleConfig] = None,
             session: Optional[requests.Session] = None,
     ) -> None:
-        self.config = config or SkribbleConfig()
         self.session = session or requests.Session()
+        self.config = config or (SkribbleEUConfig() if region == 'DE_EU' else SkribbleConfig())
         self.session.headers.update({"User-Agent": self.config.user_agent})
 
         self._token_manager = TokenManager(
