@@ -22,6 +22,7 @@ class DocumentsClient:
             *,
             title: str,
             content: str,
+            content_type: str = "application/pdf",
             **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
@@ -36,6 +37,7 @@ class DocumentsClient:
         body: Dict[str, Any] = {
             "title": title,
             "content": content,
+            "content_type": content_type,
         }
         body.update(extra_fields)
 

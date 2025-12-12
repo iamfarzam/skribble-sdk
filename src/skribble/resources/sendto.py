@@ -60,8 +60,10 @@ class SendToClient:
 
         Mirrors GET /sendto/{SEND_TO_ID}/download with header X-Accesscode.
         """
-        # Note: This endpoint is on the root /sendto, not /v2/sendto
-        url_path = f"/sendto/{send_to_id}/download"
+        api_root = self._client.config.api_base_url.rstrip("/")
+        if api_root.endswith("/v2"):
+            api_root = api_root[:-3]
+        url_path = f"{api_root}/sendto/{send_to_id}/download"
         resp = self._client.request(
             "GET",
             url_path,
@@ -82,5 +84,4 @@ class SendToClient:
             f"/sendto/{send_to_id}",
             auth=False,
             headers={"X-Accesscode": access_code},
-            expected_status=200,
         )

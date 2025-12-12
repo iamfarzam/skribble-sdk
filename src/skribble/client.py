@@ -85,6 +85,10 @@ class SkribbleClient:
         return self._token_manager.get_access_token(force_refresh=force_refresh)
 
     def _build_url(self, path: str, *, management: bool = False) -> str:
+        # Allow passing full URLs to bypass base composition (needed for non-/v2 endpoints).
+        if path.startswith("http://") or path.startswith("https://"):
+            return path
+
         base = self.config.management_base_url if management else self.config.api_base_url
         return f"{base}{path}"
 

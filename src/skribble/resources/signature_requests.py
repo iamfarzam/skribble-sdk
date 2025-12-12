@@ -26,33 +26,37 @@ class SignatureRequestsClient:
             self,
             *,
             title: str,
-            signatures: List[Dict[str, Any]],
+            signatures: Optional[List[Dict[str, Any]]] = None,
             content: Optional[str] = None,
             file_url: Optional[str] = None,
             document_id: Optional[str] = None,
-            visual_signatures: Optional[List[Dict[str, Any]]] = None,
-            observers: Optional[List[Dict[str, Any]]] = None,
+            message: Optional[str] = None,
+            content_type: Optional[str] = None,
+            observers: Optional[List[str]] = None,
+            cc_email_addresses: Optional[List[str]] = None,
             callbacks: Optional[List[Dict[str, Any]]] = None,
-            auto_attachments: Optional[List[Dict[str, Any]]] = None,
+            callback_success_url: Optional[str] = None,
+            callback_update_url: Optional[str] = None,
+            callback_error_url: Optional[str] = None,
+            attach_on_success: Optional[List[str]] = None,
+            quality: Optional[str] = None,
             signature_level: Optional[str] = None,
             legislation: Optional[str] = None,
+            creator: Optional[str] = None,
             owner_account_email: Optional[str] = None,
-            signing_sequence: Optional[List[str]] = None,
-            disable_tan: Optional[bool] = None,
+            write_access: Optional[List[str]] = None,
+            read_access: Optional[List[str]] = None,
             disable_notifications: Optional[bool] = None,
             **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
-        Create a SignatureRequest.
+        Create a SignatureRequest using any of the documented variants.
 
-        This method unifies the multiple "Create SignatureRequest" variants from the Postman
-        examples:
-
-        - PDF via `content` (Base64 PDF)
-        - PDF via `file_url`
-        - Existing Document via `document_id`
-        - Extended options: `observers`, `callbacks`, `auto_attachments`, signing sequence,
-          notification controls, etc.
+        Covers:
+        - Uploading a PDF (`content`), using an existing URL (`file_url`), or reusing an uploaded
+          document (`document_id`).
+        - Visual signatures (provided inside each item of `signatures`), quality/legislation,
+          observers, callbacks, auto-attachments, specific owner (`creator`), and no-account signers.
 
         Exactly one of `content`, `file_url` or `document_id` must be provided.
         """
@@ -66,7 +70,7 @@ class SignatureRequestsClient:
 
         body: Dict[str, Any] = {
             "title": title,
-            "signatures": signatures,
+            "signatures": signatures or [],
         }
         if content is not None:
             body["content"] = content
@@ -74,25 +78,38 @@ class SignatureRequestsClient:
             body["file_url"] = file_url
         if document_id is not None:
             body["document_id"] = document_id
+        if message is not None:
+            body["message"] = message
+        if content_type is not None:
+            body["content_type"] = content_type
 
-        if visual_signatures is not None:
-            body["visual_signatures"] = visual_signatures
-        if observers is not None:
-            body["observers"] = observers
+        ccs = cc_email_addresses or observers
+        if ccs is not None:
+            body["cc_email_addresses"] = ccs
         if callbacks is not None:
             body["callbacks"] = callbacks
-        if auto_attachments is not None:
-            body["auto_attachments"] = auto_attachments
-        if signature_level is not None:
-            body["signature_level"] = signature_level
+        if callback_success_url is not None:
+            body["callback_success_url"] = callback_success_url
+        if callback_update_url is not None:
+            body["callback_update_url"] = callback_update_url
+        if callback_error_url is not None:
+            body["callback_error_url"] = callback_error_url
+        if attach_on_success is not None:
+            body["attach_on_success"] = attach_on_success
+
+        quality_value = quality or signature_level
+        if quality_value is not None:
+            body["quality"] = quality_value
         if legislation is not None:
             body["legislation"] = legislation
-        if owner_account_email is not None:
-            body["owner_account_email"] = owner_account_email
-        if signing_sequence is not None:
-            body["signing_sequence"] = signing_sequence
-        if disable_tan is not None:
-            body["disable_tan"] = disable_tan
+
+        creator_value = creator or owner_account_email
+        if creator_value is not None:
+            body["creator"] = creator_value
+        if write_access is not None:
+            body["write_access"] = write_access
+        if read_access is not None:
+            body["read_access"] = read_access
         if disable_notifications is not None:
             body["disable_notifications"] = disable_notifications
 
@@ -166,6 +183,72 @@ class SignatureRequestsClient:
             "POST",
             "/signature-requests/bulk",
             json=ids,
+        )
+        return resp.json()
+
+    # ---------- Update (multiple signers or meta) ----------
+
+    def update(
+            self,
+            signature_request_id: str,
+            *,
+            title: Optional[str] = None,
+            message: Optional[str] = None,
+            signatures: Optional[List[Dict[str, Any]]] = None,
+            attach_on_success: Optional[List[str]] = None,
+            callbacks: Optional[List[Dict[str, Any]]] = None,
+            callback_success_url: Optional[str] = None,
+            callback_update_url: Optional[str] = None,
+            callback_error_url: Optional[str] = None,
+            quality: Optional[str] = None,
+            legislation: Optional[str] = None,
+            creator: Optional[str] = None,
+            read_access: Optional[List[str]] = None,
+            write_access: Optional[List[str]] = None,
+            **extra_fields: Any,
+    ) -> Dict[str, Any]:
+        """
+        Update a SignatureRequest, including adding/removing signers in bulk.
+
+        Mirrors PUT /v2/signature-requests which expects the SignatureRequest payload (including id)
+        and is used in the Postman collection as "Add or remove multiple signers simultaneously".
+        """
+        body: Dict[str, Any] = {
+            "id": signature_request_id,
+        }
+        if title is not None:
+            body["title"] = title
+        if message is not None:
+            body["message"] = message
+        if signatures is not None:
+            body["signatures"] = signatures
+        if attach_on_success is not None:
+            body["attach_on_success"] = attach_on_success
+        if callbacks is not None:
+            body["callbacks"] = callbacks
+        if callback_success_url is not None:
+            body["callback_success_url"] = callback_success_url
+        if callback_update_url is not None:
+            body["callback_update_url"] = callback_update_url
+        if callback_error_url is not None:
+            body["callback_error_url"] = callback_error_url
+        if quality is not None:
+            body["quality"] = quality
+        if legislation is not None:
+            body["legislation"] = legislation
+        if creator is not None:
+            body["creator"] = creator
+        if read_access is not None:
+            body["read_access"] = read_access
+        if write_access is not None:
+            body["write_access"] = write_access
+
+        body.update(extra_fields)
+
+        resp = self._client.request(
+            "PUT",
+            "/signature-requests",
+            json=body,
         )
         return resp.json()
 
@@ -257,6 +340,19 @@ class SignatureRequestsClient:
             expected_status=204,
         )
 
+    def download_attachment(self, signature_request_id: str, attachment_id: str) -> bytes:
+        """
+        Download a specific attachment from a SignatureRequest.
+
+        Mirrors GET /v2/signature-requests/{SR_ID}/attachments/{ATTACHMENT_ID}/content
+        """
+        resp = self._client.request(
+            "GET",
+            f"/signature-requests/{signature_request_id}/attachments/{attachment_id}/content",
+            stream=True,
+        )
+        return resp.content
+
     # ---------- Delete / withdraw / remind ----------
 
     def delete(self, signature_request_id: str) -> None:
@@ -310,3 +406,42 @@ class SignatureRequestsClient:
             f"/signature-requests/{signature_request_id}/callbacks",
         )
         return resp.json()
+
+    # ---------- Signing view (web app) ----------
+
+    def view(
+            self,
+            signature_request_id: str,
+            *,
+            exit_url: Optional[str] = None,
+            redirect_timeout: Optional[int] = None,
+            hide_download: Optional[bool] = None,
+    ) -> str:
+        """
+        Build and call the signing view endpoint (used to redirect a user to sign).
+
+        Mirrors GET /view/{SR_ID} from the Postman quickstart. Returns the resolved URL
+        (after applying query params). Uses app_base_url from config if provided, otherwise
+        falls back to the API host without /v2.
+        """
+        base_app = getattr(self._client.config, "app_base_url", None) or self._client.config.api_base_url.rstrip("/")
+        if base_app.endswith("/v2"):
+            base_app = base_app[:-3]
+
+        url = f"{base_app}/view/{signature_request_id}"
+        params: Dict[str, Any] = {}
+        if exit_url is not None:
+            params["exitURL"] = exit_url
+        if redirect_timeout is not None:
+            params["redirectTimeout"] = redirect_timeout
+        if hide_download is not None:
+            params["hidedownload"] = str(hide_download).lower()
+
+        # Do not force auth; view endpoint is meant for end-user redirect context.
+        resp = self._client.request(
+            "GET",
+            url,
+            auth=False,
+            params=params or None,
+        )
+        return resp.url

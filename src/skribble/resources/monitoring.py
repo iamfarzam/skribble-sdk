@@ -25,7 +25,9 @@ class MonitoringClient:
             title: str,
             content: str,
             signatures: List[Dict[str, Any]],
-            callbacks: List[Dict[str, Any]],
+            callback_success_url: str,
+            callback_update_url: str,
+            callback_error_url: str,
             **extra_fields: Any,
     ) -> Dict[str, Any]:
         """
@@ -38,7 +40,9 @@ class MonitoringClient:
             title=title,
             content=content,
             signatures=signatures,
-            callbacks=callbacks,
+            callback_success_url=callback_success_url,
+            callback_update_url=callback_update_url,
+            callback_error_url=callback_error_url,
             **extra_fields,
         )
 
