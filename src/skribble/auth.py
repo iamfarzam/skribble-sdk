@@ -1,21 +1,64 @@
 from __future__ import annotations
 
 import json
-from typing import Optional
+import time
+from threading import Lock
+from typing import Any, Optional, Protocol, runtime_checkable
 
-import redis
 import requests
 from skribble.config import SkribbleConfig
 from skribble.exceptions import SkribbleAuthError
 from skribble.exceptions import SkribbleHTTPError
 
 
+@runtime_checkable
+class TokenCache(Protocol):
+    """Minimal cache interface used for storing access tokens."""
+
+    def get(self, key: str) -> Optional[bytes]:
+        ...
+
+    def setex(self, key: str, ttl_seconds: int, value: Any) -> None:
+        ...
+
+
+class _InMemoryTokenCache:
+    """
+    Lightweight in-memory cache to avoid a hard Redis dependency.
+
+    Stores values with an expiry timestamp and mirrors the Redis API surface
+    used by TokenManager (get/setex).
+    """
+
+    def __init__(self) -> None:
+        self._data: dict[str, tuple[float, bytes]] = {}
+        self._lock = Lock()
+
+    def get(self, key: str) -> Optional[bytes]:
+        with self._lock:
+            entry = self._data.get(key)
+            if not entry:
+                return None
+            expires_at, value = entry
+            if expires_at < time.time():
+                self._data.pop(key, None)
+                return None
+            return value
+
+    def setex(self, key: str, ttl_seconds: int, value: Any) -> None:
+        # Redis stores bytes; mirror that to keep TokenManager logic consistent.
+        payload = value if isinstance(value, (bytes, bytearray)) else str(value).encode("utf-8")
+        with self._lock:
+            self._data[key] = (time.time() + ttl_seconds, payload)
+
+
 class TokenManager:
     """
-    Handles obtaining and caching Skribble access tokens (JWTs) in Redis.
+    Handles obtaining and caching Skribble access tokens (JWTs) in a cache backend.
 
     - Logs in via POST /access/login with username + api-key
-    - Caches access token in Redis with TTL from config (default 20 minutes)
+    - Caches access token with TTL from config (default 20 minutes)
+    - Uses Redis if provided, otherwise falls back to an in-memory cache
     """
 
     def __init__(
@@ -25,19 +68,20 @@ class TokenManager:
             api_key: str,
             http_session: requests.Session,
             config: SkribbleConfig,
-            redis_client: redis.Redis,
+            redis_client: Optional[TokenCache] = None,
+            token_cache: Optional[TokenCache] = None,
             tenant_id: Optional[str] = None,
     ) -> None:
         self._username = username
         self._api_key = api_key
         self._session = http_session
         self._cfg = config
-        self._redis = redis_client
+        self._cache: TokenCache = token_cache or redis_client or _InMemoryTokenCache()
         self._tenant_id = tenant_id
 
     @property
-    def _redis_key(self) -> str:
-        base = f"{self._cfg.redis_key_prefix}:token:{self._username}"
+    def _cache_key(self) -> str:
+        base = f"{self._cfg.cache_key_prefix}:token:{self._username}"
         if self._tenant_id:
             return f"{base}:{self._tenant_id}"
         return base
@@ -47,17 +91,13 @@ class TokenManager:
         Returns a valid access token, refreshing it via /access/login if needed.
         """
         if not force_refresh:
-            cached = self._redis.get(self._redis_key)
+            cached = self._cache.get(self._cache_key)
             if cached:
                 return cached.decode("utf-8")
 
         token = self._login()
         # Store token with configured TTL (docs: ~20 minutes)
-        self._redis.setex(
-            self._redis_key,
-            self._cfg.access_token_ttl_seconds,
-            token,
-        )
+        self._cache.setex(self._cache_key, self._cfg.access_token_ttl_seconds, token)
         return token
 
     def _login(self) -> str:

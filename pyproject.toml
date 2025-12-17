@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skribble"
-version = "0.1.5"
+version = "0.2.0"
 description = "Official-spec Skribble API v2 SDK (built from Skribble Postman collection)"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,6 +14,10 @@ authors = [
 ]
 dependencies = [
   "requests>=2.31.0",
+]
+
+[project.optional-dependencies]
+redis = [
   "redis>=5.0.0",
 ]
 

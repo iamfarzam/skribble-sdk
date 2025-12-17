@@ -24,7 +24,7 @@ class SkribbleConfig:
     verify_ssl: bool = True
     user_agent: str = "skribble-sdk/0.1.4"
     access_token_ttl_seconds: int = DEFAULT_ACCESS_TOKEN_TTL_SECONDS
-    redis_key_prefix: str = "skribble"
+    cache_key_prefix: str = "skribble"
     app_base_url: str = DEFAULT_APP_BASE_URL
 
 @dataclass

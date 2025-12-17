@@ -6,7 +6,7 @@ Skribble Postman collection.
 ## Features
 
 - Authentication via `/v2/access/login`
-- Redis-based JWT access token caching (default TTL: 20 minutes, per Skribble docs)
+- JWT access token caching (default in-memory with optional Redis backend; default TTL: 20 minutes)
 - High-level clients for:
   - SignatureRequests
   - Documents
@@ -20,15 +20,24 @@ Skribble Postman collection.
 
 ```bash
 pip install skribble
+
+# If you want Redis-backed token caching
+pip install "skribble[redis]"
 ```
 
 ## Usage
 ```python
-import redis
 from skribble import SkribbleClient
 
-r = redis.Redis(host="localhost", port=6379, db=0)
+# Default: in-memory token cache (per-process)
+client = SkribbleClient(
+    username="api_demo_your_name",
+    api_key="your_api_key",
+)
 
+# Optional: Redis-backed token cache (shared across processes)
+import redis
+r = redis.Redis(host="localhost", port=6379, db=0)
 client = SkribbleClient(
     username="api_demo_your_name",
     api_key="your_api_key",
@@ -50,4 +59,9 @@ sr = client.signature_requests.create(
 
 # List signature requests
 srs = client.signature_requests.list(page_size=50)
+
+# Token caching
+# - Default in-memory cache (per process)
+# - For shared caching use Redis (`pip install "skribble[redis]"`) and pass `redis_client`
+# - You can also provide any cache object with `get(key)` and `setex(key, ttl_seconds, value)`
 ```

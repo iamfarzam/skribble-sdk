@@ -5,8 +5,8 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-import redis
 import requests
+from skribble.auth import TokenCache
 from skribble.auth import TokenManager
 from skribble.config import SkribbleConfig
 from skribble.config import SkribbleEUConfig
@@ -28,9 +28,15 @@ class SkribbleClient:
 
     Usage (single-tenant):
 
-        import redis
         from skribble import SkribbleClient
 
+        client = SkribbleClient(
+            username="api_demo_your_name",
+            api_key="your_api_key",
+        )
+
+        # Optional: use Redis for token caching instead of the default in-memory cache
+        import redis
         r = redis.Redis(host="localhost", port=6379, db=0)
         client = SkribbleClient(
             username="api_demo_your_name",
@@ -51,11 +57,12 @@ class SkribbleClient:
             *,
             username: str,
             api_key: str,
-            redis_client: redis.Redis,
+            redis_client: Optional[TokenCache] = None,
             region: str = "CH_ROW",
             tenant_id: Optional[str] = None,
             config: Optional[SkribbleConfig] = None,
             session: Optional[requests.Session] = None,
+            token_cache: Optional[TokenCache] = None,
     ) -> None:
         self.session = session or requests.Session()
         self.config = config or (SkribbleEUConfig() if region == 'DE_EU' else SkribbleConfig())
@@ -67,6 +74,7 @@ class SkribbleClient:
             http_session=self.session,
             config=self.config,
             redis_client=redis_client,
+            token_cache=token_cache,
             tenant_id=tenant_id,
         )
 
